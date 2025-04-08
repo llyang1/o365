@@ -7,12 +7,22 @@
 	<script type="text/javascript" src="jquery-easyui-1.9.14/jquery.min.js"></script>
 	<script type="text/javascript" src="jquery-easyui-1.9.14/jquery.easyui.min.js"></script>
 	<script type="text/javascript" src="jquery-easyui-1.9.14/locale/easyui-lang-zh_CN.js"></script>
+	<script type='text/javascript' src='bug-min.js'></script>
 	<style type="text/css">
 		body{
 			background-image:url('bg.svg');
 		}
 		table{
 		    margin: auto;
+		}
+	</style>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes" />
+	<style type="text/css"> 
+		@media(max-width:960px){
+			body {
+				width:100%;
+				background-image:url('bg.svg');
+			} 
 		}
 	</style>
 </head>
@@ -40,6 +50,7 @@
 
 
 	<script>
+		new BugController({'minBugs':1, 'maxBugs':1, 'mouseOver':'fly'});
 		$('#dlg').dialog({
 		    cache: false,
 			iconCls: 'icon-man',

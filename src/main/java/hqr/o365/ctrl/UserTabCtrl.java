@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import hqr.o365.domain.LicenseInfo;
 import hqr.o365.service.CreateOfficeUser;
 import hqr.o365.service.DeleteOfficeUser;
+import hqr.o365.service.DomainAction;
 import hqr.o365.service.GetDomainInfo;
+import hqr.o365.service.GetDomainInfo2;
 import hqr.o365.service.GetLicenseInfo;
 import hqr.o365.service.GetOfficeUser;
 import hqr.o365.service.GetOfficeUserByKeyWord;
@@ -22,6 +24,7 @@ import hqr.o365.service.GetOfficeUserRole;
 import hqr.o365.service.MassCreateOfficeUser;
 import hqr.o365.service.UpdateOfficeUser;
 import hqr.o365.service.UpdateOfficeUserRole;
+import hqr.o365.service.ValidateCfConfig;
 
 @Controller
 public class UserTabCtrl {
@@ -37,6 +40,9 @@ public class UserTabCtrl {
 	
 	@Autowired
 	private GetDomainInfo gdi;
+	
+	@Autowired
+	private GetDomainInfo2 gdi2;
 	
 	@Autowired
 	private CreateOfficeUser cou;
@@ -59,6 +65,12 @@ public class UserTabCtrl {
 	@Autowired
 	private MassCreateOfficeUser mcou;
 	
+	@Autowired
+	private DomainAction da;
+	
+	@Autowired
+	private ValidateCfConfig vcc;
+	
 	@RequestMapping(value = {"/tabs/user.html"})
 	public String dummy() {
 		return "tabs/user";
@@ -77,7 +89,7 @@ public class UserTabCtrl {
 			req.getSession().setAttribute("licenseVo", vo);
 		}
 		else {
-			System.out.println("licenseVo already exist,skip to get");
+			//licenseVo already exist,skip to get
 		}
 		return "tabs/dialogs/createUser";
 	}
@@ -95,9 +107,27 @@ public class UserTabCtrl {
 			req.getSession().setAttribute("licenseVo", vo);
 		}
 		else {
-			System.out.println("licenseVo already exist,skip to get");
+			//licenseVo already exist,skip to get
 		}
 		return "tabs/dialogs/massCreateUser";
+	}
+	
+	@RequestMapping(value = {"tabs/dialogs/domain.html"})
+	public String dummyDomain(HttpServletRequest req) {
+		Object tmp2 = req.getSession().getAttribute("licenseVo");
+		if(tmp2==null) {
+			HashMap<String, Object> map2 = gli.getLicenses();
+			List<LicenseInfo> vo = new ArrayList<LicenseInfo>();
+			Object obj = map2.get("licenseVo");
+			if(obj!=null) {
+				vo = (List<LicenseInfo>)obj;
+			}
+			req.getSession().setAttribute("licenseVo", vo);
+		}
+		else {
+			//licenseVo already exist,skip to get
+		}
+		return "tabs/dialogs/domain";
 	}
 	
 	@ResponseBody
@@ -114,6 +144,12 @@ public class UserTabCtrl {
 			return (String)tmp;
 		}
 		
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = {"/getDomains2"})
+	public String getDomains2() {
+		return gdi2.getAllDomains();
 	}
 	
 	@ResponseBody
@@ -142,7 +178,6 @@ public class UserTabCtrl {
 		}
 		else {
 			String keyword = (String)obj;
-			System.out.println("keyword is "+keyword);
 			if(!"".equals(keyword)) {
 				map = goubk.getUsers(intPage, intRows, keyword);
 			}
@@ -251,4 +286,45 @@ public class UserTabCtrl {
 		return goud.getDefaultPwd();
 	}
 	
+	@ResponseBody
+	@RequestMapping(value = {"/domainAction"}, method = RequestMethod.POST)
+	public String domainAction(@RequestParam(name="domain") String domain, @RequestParam(name="action") String action, HttpServletRequest req) {
+		if("add".equals(action)) {
+			if(da.createDomain(domain)) {
+				System.out.println("create - reset domainVo");
+				req.getSession().setAttribute("domainVo", null);
+				return da.verificationDnsRecords(domain);
+			}
+			else {
+				return "fail";
+			}
+		}
+		else if("del".equals(action)){
+			if(da.deleteDomain(domain)) {
+				System.out.println("del - reset domainVo");
+				req.getSession().setAttribute("domainVo", null);
+				return "succ";
+			}
+			else {
+				return "fail";
+			}
+		}
+		else if("verify".equals(action)){
+			String res = da.verifyDomain(domain);
+			if("succ".equals(res)) {
+				System.out.println("verify reset domainVo");
+				req.getSession().setAttribute("domainVo", null);
+			}
+			return res;
+		}
+		else {
+			return "fail";
+		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = {"/validateCf"}, method = RequestMethod.GET)
+	public boolean validateCf() {
+		return vcc.validateCf();
+	}
 }

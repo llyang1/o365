@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -30,11 +31,12 @@ public class GetDomainInfo {
 	@Value("${UA}")
     private String ua;
 
+	@Cacheable(value="cacheDomain")
 	public String getDomains(){
 		String json = "[]";
 		List<ComboboxDo> ll = new ArrayList<ComboboxDo>();
 		
-		List<TaOfficeInfo> list = repo.getSelectedApp();
+		List<TaOfficeInfo> list = repo.findBySelected("是");
 		if(list!=null&&list.size()>0) {
 			TaOfficeInfo ta = list.get(0);
 			String accessToken = "";
@@ -80,7 +82,6 @@ public class GetDomainInfo {
 				}
 			}
 		}
-		System.out.println("The combobox json is "+json);
 		return json;
 	}
 	

@@ -7,9 +7,10 @@
 </head>
 <body>
 	<div id="tb6" ></div>
+
 	<script type="text/javascript" th:inline="none">
 		var row6;
-	
+
 		$('#tb6').datagrid({
 			border:false,
 			fit:true,
@@ -17,6 +18,7 @@
 			pagination:true,
 			pageSize : 100,
 			pageList : [100,200,500],
+			remoteSort: false,
 			autoRowHeight:false,
 			url:'/getAppRpt',
 			method:'post',
@@ -40,7 +42,6 @@
 								timeout:3000,
 								showType:'slide'
 							});
-							$('#tb6').datagrid('reload');
 						},
 						error : function(){
 					       	$.messager.show({
@@ -51,6 +52,41 @@
 							}); 
 						}
 					});
+					$('#tb6').datagrid('reload');
+				}
+			},{
+				text:'下载Exchange报告',
+				iconCls:'icon-outlook16',
+				handler:function(){
+					row6 = $('#tb6').datagrid('getSelections');
+					if(row6!=null&&row6.length==1){
+						window.location.href="/getExchangeRpt?seqNo="+row6[0].seqNo;
+					}
+					else{
+						$.messager.show({
+							title:'错误',
+							msg:'请选择一行',
+							timeout:2000,
+							showType:'slide'
+						});
+					}
+				}
+			},{
+				text:'下载Onedrive报告',
+				iconCls:'icon-od16',
+				handler:function(){
+					row6 = $('#tb6').datagrid('getSelections');
+					if(row6!=null&&row6.length==1){
+						window.location.href="/getOnedriveRpt?seqNo="+row6[0].seqNo;
+					}
+					else{
+						$.messager.show({
+							title:'错误',
+							msg:'请选择一行',
+							timeout:2000,
+							showType:'slide'
+						});
+					}
 				}
 			},{
 				text:'刷新',
@@ -62,15 +98,17 @@
 				text:'帮助',
 				iconCls:'icon-help',
 				handler:function(){
-					$.messager.alert('帮助','系统会每2天随机扫描所有APP的管理员状态，并生成此可用性报告，此功能默认关闭，你可以在系统配置通过配置GEN_APP_RPT=Y来打开它并可以通过修改GEN_APP_RPT_CRON来重新定义时间，你也可以手动执行。<br>'+
+					$.messager.alert('帮助','系统会每2天随机扫描所有APP的管理员状态，并生成此可用性报告，此功能默认关闭，你可以在系统配置通过配置GEN_APP_RPT=Y来打开它并可以通过修改GEN_APP_RPT_CRON来重新定义时间<br>'+
 							'1.无颜色代表至少一个管理员存活<br>'+
 							'2.<font color=red>红色</font>代表全局无管理员或者无管理员存活<br>'+
 							'3.<font color="#A9A9A9">灰色</font>代表无效全局<br>'+
-							'4.<font color="#FFA500">橙色</font>代表SPO=0的全局','');
+							'4.<font color="#FFA500">橙色</font>代表SPO=0的全局<br>'+
+							'下载Exchange报告可以查看选中全局下所有用户30日内的Outlook使用状态<br>'+
+							'下载Onedrive报告可以查看选中全局下所有用户30日内的Onedrive使用状态','');
 				}
 			}],
 			columns : [[
-				{field : 'rptDt',title : '报告时间',align : 'center',
+				{field : 'rptDt',title : '报告时间',align : 'center',sortable:true,
 					formatter: function(value,row,index){
 						if(value==null||value==''){
 							return '';
@@ -83,13 +121,13 @@
 						}
 					}	
 				},
-				{field : 'tenantId',title : '租户ID',align : 'center'},
-				{field : 'remarks',title : '备注',align : 'center'},
-				{field : 'totalUser',title : '用户总数',align : 'center'},
-				{field : 'totalGlobalAdmin',title : '总管理员数',align : 'center'},
-				{field : 'enableGlobalAdmin',title : '可用管理员数',align : 'center'},
-				{field : 'disableGloablAdmin',title : '不可用管理员数',align : 'center'},
-				{field : 'spo',title : 'SPO',align : 'center'}
+				{field : 'tenantId',title : '租户ID',align : 'center',sortable:true},
+				{field : 'remarks',title : '备注',align : 'center',sortable:true},
+				{field : 'totalUser',title : '用户总数',align : 'center',sortable:true},
+				{field : 'totalGlobalAdmin',title : '总管理员数',align : 'center',sortable:true},
+				{field : 'enableGlobalAdmin',title : '可用管理员数',align : 'center',sortable:true},
+				{field : 'disableGloablAdmin',title : '不可用管理员数',align : 'center',sortable:true},
+				{field : 'spo',title : 'SPO',align : 'center',sortable:true}
 			]],
             onLoadError: function (data){
             	console.log(data);

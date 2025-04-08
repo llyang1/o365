@@ -19,8 +19,13 @@ public class TaUserDetailsService implements UserDetailsService{
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		TaUser taUser = tup.getUserById(username);
-        return new User(username, taUser.getPasswd(),AuthorityUtils.commaSeparatedStringToAuthorityList("admin"));
+		TaUser taUser = tup.findByUserId(username);
+		if(taUser!=null) {
+			return new User(username, taUser.getPasswd(),AuthorityUtils.commaSeparatedStringToAuthorityList("admin"));
+		}
+		else {
+			return null;
+		}
 	}
 
 }

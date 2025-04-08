@@ -1,8 +1,8 @@
 package hqr.o365.service;
 
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import hqr.o365.dao.TaUserRepo;
@@ -13,24 +13,14 @@ public class ChkUser {
 	@Autowired
 	private TaUserRepo tup;
 	
+	@Cacheable(value="cacheTaUser")
 	public String checkCanReg(String userid) {
-		int cnt = tup.chkUserId(userid);
-		if(cnt>0) {
+		TaUser user = tup.findByUserId(userid);
+		if(user!=null) {
 			return "N";
 		}
 		else{
 			return "Y";
 		}
 	}
-	
-	public TaUser checkCredential(String userid, String pwd) {
-		List<TaUser> users = tup.checkCredential(userid, pwd);
-		if(users!=null && users.size()>0) {
-			return users.get(0);
-		}
-		else {
-			return null;
-		}
-	}
-	
 }

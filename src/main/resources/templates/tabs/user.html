@@ -9,6 +9,7 @@
 	<div id="tb3"></div>
 	<div id="dlg3"></div>
 	<div id="dlg5"></div>
+	<div id="dlg9"></div>
 	
 	<script type="text/javascript" th:inline="none">
 		var row3;
@@ -33,6 +34,16 @@
 		    cache: false,
 		    href: 'tabs/dialogs/massCreateUser.html'
 		});
+		$('#dlg9').dialog({
+		    title: '域名管理',
+			iconCls: 'icon-cf',
+			modal : true,
+			closed : true,
+			width: 430,
+			height: 210,
+		    cache: false,
+		    href: 'tabs/dialogs/domain.html'
+		});
 		$('#tb3').datagrid({
 			border:false,
 			fit:true,
@@ -43,6 +54,7 @@
 			pagination:true,
 			pageSize : 100,
 			pageList : [100,200,500],
+			remoteSort: false,
 			url:'/getOfficeUser',
 			method:'post',
 			toolbar: [{
@@ -320,12 +332,25 @@
 						});
 					}
 				}
+			},{
+				text:'域名',
+				iconCls:'icon-cf',
+				handler:function(){
+					$('#dlg9').dialog('open');
+				}
 			},'-',{
 				text:'搜索',
 				iconCls:'icon-search',
 				handler:function(){
-					$.messager.prompt('请输入关键字', '可以搜索名字和邮箱前缀', function(r){
+					$.messager.prompt('请输入关键字', '可以搜索名字和邮箱前缀，搜索空串或取消将会显示所有用户', function(r){
+						var keyword;
 						console.log("keyword is "+r);
+						if(r){
+							keyword = r;
+						}
+						else{
+							keyword = "";
+						}
 						$.ajax({
 						    type : "POST", 
 						    url : "/saveKeyWord",
@@ -359,7 +384,7 @@
 			}],
 			columns : [[
 				{field : 'ck',title : '选中',align : 'center',checkbox: true}, 
-				{field : 'accountEnabled',title : '用户状态',align : 'center',
+				{field : 'accountEnabled',title : '用户状态',align : 'center',sortable:true,
 					formatter: function(value,row,index){
 						if(value=='true'){
 							return "<font color='green'>可用</font>";
@@ -370,10 +395,10 @@
 					}
 				}, 
 				//{field : 'id',title : 'UID',align : 'center'}, 
-				{field : 'userPrincipalName',title : '邮箱',align : 'center'}, 
-				{field : 'displayName',title : '名字',align : 'center'},
-				{field : 'assignedLicenses',title : '已分配订阅',align : 'center'},
-				{field : 'usageLocation',title : '国家/地区',align : 'center'}
+				{field : 'userPrincipalName',title : '邮箱',align : 'center',sortable:true}, 
+				{field : 'displayName',title : '名字',align : 'center',sortable:true},
+				{field : 'assignedLicenses',title : '已分配订阅',align : 'center',sortable:true},
+				{field : 'usageLocation',title : '国家/地区',align : 'center',sortable:true}
 			]],
             onLoadError: function (data){
             	console.log(data);
@@ -381,7 +406,6 @@
 				$('#tb3').datagrid('loadData',{'total':0,'rows':[]});
             }
 		});
-		
 	</script>
 	
 </body>

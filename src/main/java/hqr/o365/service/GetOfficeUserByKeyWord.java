@@ -3,9 +3,11 @@ package hqr.o365.service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -18,8 +20,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.util.URLUtil;
+import hqr.o365.dao.TaMasterCdRepo;
 import hqr.o365.dao.TaOfficeInfoRepo;
 import hqr.o365.domain.OfficeUser;
+import hqr.o365.domain.TaMasterCd;
 import hqr.o365.domain.TaOfficeInfo;
 
 @Service
@@ -33,15 +37,19 @@ public class GetOfficeUserByKeyWord {
 	@Autowired
 	private ValidateAppInfo vai;
 	
+	@Autowired
+	private TaMasterCdRepo tmc;
+	
 	@Value("${UA}")
     private String ua;
 
+	@Cacheable(value="cacheOfficeUserSearch")
 	public HashMap<String, String> getUsers(int page, int rows, String keyword){
 		HashMap<String, String> map = new HashMap<String, String>();
 		List<OfficeUser> ll = new ArrayList<OfficeUser>();
 		HashMap jsonTmp = new HashMap();
 		
-		List<TaOfficeInfo> list = repo.getSelectedApp();
+		List<TaOfficeInfo> list = repo.findBySelected("是");
 		if(list!=null&&list.size()>0) {
 			TaOfficeInfo ta = list.get(0);
 			String accessToken = "";
@@ -126,7 +134,16 @@ public class GetOfficeUserByKeyWord {
 							for (Object object2 : licen) {
 								JSONObject newJb = (JSONObject)object2;
 								String skuId = newJb.getString("skuId");
-								ou.getAssignedLicenses().add(skuId);
+								
+								//get decode value,else use skuid to display
+								Optional<TaMasterCd> rlc = tmc.findById(skuId);
+								if(rlc.isPresent()) {
+									TaMasterCd skuenti = rlc.get();
+									ou.getAssignedLicenses().add(skuenti.getDecode());
+								}
+								else {
+									ou.getAssignedLicenses().add(skuId);
+								}
 							}
 						}
 						ou.setAccountEnabled(accountEnabled);
@@ -187,7 +204,16 @@ public class GetOfficeUserByKeyWord {
 					for (Object object2 : licen) {
 						JSONObject newJb = (JSONObject)object2;
 						String skuId = newJb.getString("skuId");
-						ou.getAssignedLicenses().add(skuId);
+						
+						//get decode value,else use skuid to display
+						Optional<TaMasterCd> rlc = tmc.findById(skuId);
+						if(rlc.isPresent()) {
+							TaMasterCd skuenti = rlc.get();
+							ou.getAssignedLicenses().add(skuenti.getDecode());
+						}
+						else {
+							ou.getAssignedLicenses().add(skuId);
+						}
 					}
 				}
 				ou.setAccountEnabled(accountEnabled);

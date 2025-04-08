@@ -112,7 +112,6 @@ public class ConfigTabCtrl {
 			@RequestParam(name="remarks") String remarks,
 			@RequestParam(name="selected") String selected) {
 		TaOfficeInfo ti = new TaOfficeInfo();
-		System.out.println("seqNo is "+ seqNo);
 		//seqNo==-1 -> insert; seqNo!=-1 -> update
 		if(seqNo!=-1) {
 			ti.setSeqNo(seqNo);
@@ -200,9 +199,9 @@ public class ConfigTabCtrl {
 			
 		}
 		else {
+			//invalid info, update the licenseVo & domain Vo to null
 			req.getSession().setAttribute("licenseVo", null);
 			req.getSession().setAttribute("domainVo", "[]");
-			System.out.println("invalid info, update the licenseVo & domain Vo to null");
 		}
 		return flag;
 	}
@@ -227,8 +226,8 @@ public class ConfigTabCtrl {
 	
 	@ResponseBody
 	@RequestMapping(value = {"/getAppRptForOne"}, method = RequestMethod.POST)
-	public String getOverallRptForOne(@RequestParam(name="seqNo") int seqNo) {
-		s41.execute(seqNo);
+	public String getOverallRptForOne(@RequestParam(name="seqNos") String seqNos) {
+		s41.execute(seqNos);
 		return "报告已生成，请前往[Office总览报告]中查看结果";
 	}
 	
@@ -248,13 +247,13 @@ public class ConfigTabCtrl {
 	public ResponseEntity<FileSystemResource> exportApps(){
 		eai.exportApp();
 		
-		return export(new File("export.csv"));
+		return export(new File("export_app_info.csv"));
 	}
 	
 	public ResponseEntity<FileSystemResource> export(File file) { 
 		HttpHeaders headers = new HttpHeaders();
 	    headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-	    headers.add("Content-Disposition", "attachment; filename=export.csv");
+	    headers.add("Content-Disposition", "attachment; filename=export_app_info.csv");
 	    headers.add("Pragma", "no-cache");
 	    headers.add("Expires", "0");
 	    headers.add("Last-Modified", new Date().toString());

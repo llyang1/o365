@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -35,6 +36,7 @@ public class UpdateOfficeUserRole {
 	@Value("${UA}")
     private String ua;
 
+	@CacheEvict(value="cacheRoleUser", allEntries = true)
 	public boolean update(String uid, String action) {
 		boolean flag = false;
 		
@@ -43,10 +45,9 @@ public class UpdateOfficeUserRole {
 		Optional<TaMasterCd> top1 = tmc.findById("DEFAULT_ADMIN_ROLE_ID");
 		if(top1.isPresent()) {
 			roleId = top1.get().getCd();
-			System.out.println("get system role "+roleId);
 		}
 		
-		List<TaOfficeInfo> list = repo.getSelectedApp();
+		List<TaOfficeInfo> list = repo.findBySelected("是");
 		if(list!=null&&list.size()>0) {
 			TaOfficeInfo ta = list.get(0);
 			String accessToken = "";
